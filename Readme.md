@@ -10,13 +10,13 @@
 
 
 ## Environment
+* **< Ubuntu 6.4.0-17 >**    
+    * Computer Architecture: x86_64
+    * CPU op-mode(s): 32-bit, 64-bit           
+* **< [SRILM 1.5.10](http://www.speech.sri.com/projects/srilm/) >**
 * **< g++ [gcc version 8.2.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 6.4.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 4.2.1 (GCC)] >** (Tested)
-* **< [SRILM 1.5.10](http://www.speech.sri.com/projects/srilm/) >**
-* **< Ubuntu 6.4.0-17 >**    
-* Computer Architecture: x86_64
-* CPU op-mode(s): 32-bit, 64-bit           
  
 
 ## Environment Setup
@@ -59,13 +59,22 @@ MACHINE_TYPE := i686-m64
 
 ### My C++ version of disambig
 
-### Other Reference
+### Other Solutions
 - Refer to the following links for further environment issues:
-    - [SRILM FQA1](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
-    - [SRILM FQA2](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
-    - [SRILM Reference](http://www.52nlp.cn/ubuntu-64-bit-system-srilm-configuration) for more information if any problem is encountered during environment setup.
-    - [Sublime Text with BIG5 encoding](https://ephrain.net/sublime-text-%E8%AE%93-sublime-text-%E6%94%AF%E6%8F%B4-big5-%E7%B7%A8%E7%A2%BC%E7%9A%84%E6%96%87%E5%AD%97%E6%AA%94/)
+    - SRILM compilation problem:
+        - [FQA 1](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
+        - [FQA 2](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
+        - [Guide](http://www.52nlp.cn/ubuntu-64-bit-system-srilm-configuration)
+    - Encoding problem:
+        - [Sublime Text with BIG5 encoding](https://ephrain.net/sublime-text-%E8%AE%93-sublime-text-%E6%94%AF%E6%8F%B4-big5-%E7%B7%A8%E7%A2%BC%E7%9A%84%E6%96%87%E5%AD%97%E6%AA%94/)
 
+
+## Usage
+- Separate training corpus into character-base: `perl separator_big5.pl corpus.txt >corpus_seg.txt`
+- Seperate all 9 testing data into character-base: `perl separator_big5.pl testdata/x.txt >testdata/seg_x.txt`
+
+
+## TBC...working
  ===== FILES =====
 corpus.txt是此次作業的語料檔案，編碼為big5
 Big5-ZhuYin.map是文字跟注音的對照表，編碼為big5
@@ -108,8 +117,3 @@ separator_big5.pl執行方法為
 ├──problem_description.pdf      Work Spec
 └── Readme.md                   This File
 ```
-
-
-## Usage
-- Separate training corpus into character-base: `perl separator_big5.pl corpus.txt >corpus_seg.txt`
-- Seperate all 9 testing data into character-base: `perl separator_big5.pl testdata/x.txt >testdata/seg_x.txt`
