@@ -18,20 +18,27 @@
 * Computer Architecture: x86_64
 * CPU op-mode(s): 32-bit, 64-bit           
  
+
 ## Environment Setup
-0. The following instructions are for a **Ubuntu 64 bit** machine.
-1. Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz)
-2. Untar the source code package: `$ tar zxvf srilm-1.5.10.tar.gz`
-3. Enter the resulting SRILM directory: `$ cd srilm-1.5.10/`
-4. Get the absolute path to this dirctory: `$ pwd`
-5. Modify `srilm-1.5.10/Makefile` and change the SRILM variable to the path obtained in step 4, and change the MACHINE_TYPE variable to match the 64-bit Ubuntu architecture:
+
+### Install Dependencies
+- Install **csh** if not already installed: `$ sudo apt-get install csh`
+- Install **gawk** if not already installed: `$ sudo apt-get install gawk`
+
+### Compile SRILM
+- The following instructions are for a **Ubuntu 64 bit** machine.
+- Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz)
+- Untar the source code package: `$ tar zxvf srilm-1.5.10.tar.gz`
+- Enter the resulting SRILM directory: `$ cd srilm-1.5.10/`
+- Get the absolute path to the `srilm-1.5.10/` directory: `$ pwd`
+- Modify `srilm-1.5.10/Makefile` and change the SRILM variable to the absolute path of `srilm-1.5.10/`, and change the MACHINE_TYPE variable to match the 64-bit Ubuntu architecture:
 ```
 # SRILM = /home/speech/stolcke/project/srilm/devel
 SRILM = /home/andi611/dsp/srilm-1.5.10
 # MACHINE_TYPE := $(shell $(SRILM)/sbin/machine-type)
 MACHINE_TYPE := i686-m64
 ```
-6. Modify the following lines in `srilm-1.5.10/common/Makefile.machine.i686-m64` to:
+- Modify the following lines in `srilm-1.5.10/common/Makefile.machine.i686-m64` to:
 ```
 - line 17: 
     CC = /usr/bin/gcc $(GCC_FLAGS)
@@ -44,14 +51,20 @@ MACHINE_TYPE := i686-m64
 - Line 69: 
     GAWK = /usr/bin/gawk
 ```
-7. Comment out line 14 ~ 29 in `srilm-1.5.10/lm/src/matherr.c` since glibc 2.27 has removed struct exception.
-8. Install **csh** if not already installed: `$ sudo apt-get install csh`
-9. Install **gawk** if not already installed: `$ sudo apt-get install gawk`
-10. Make sure that all the programs under `srilm-1.5.10/sbin` are executable, if not: `$ sudo chmod 755 *`
-11. Compile: `$ sudo make World`
-12. Clean up: `$ make cleanest`
-13. Check that there are executable files in `srilm-1.5.10/bin/i686-m64`
-14. Refer to [FQA1](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html), [FQA2](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html), and [Reference](http://www.52nlp.cn/ubuntu-64-bit-system-srilm-configuration) for more information if any problem is encountered during environment setup.
+- Comment out line 14 ~ 29 in `srilm-1.5.10/lm/src/matherr.c` since glibc 2.27 has removed struct exception.
+- Make sure that all the programs under `srilm-1.5.10/sbin` are executable, if not: `$ sudo chmod 755 *`
+- Compile: `$ sudo make World`
+- Clean up: `$ make cleanest`
+- Check that there are executable files in `srilm-1.5.10/bin/i686-m64`
+
+### My C++ version of disambig
+
+### Other Reference
+- Refer to the following links for further environment issues:
+    - [SRILM FQA1](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
+    - [SRILM FQA2](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
+    - [SRILM Reference](http://www.52nlp.cn/ubuntu-64-bit-system-srilm-configuration) for more information if any problem is encountered during environment setup.
+    - [Sublime Text with BIG5 encoding](https://ephrain.net/sublime-text-%E8%AE%93-sublime-text-%E6%94%AF%E6%8F%B4-big5-%E7%B7%A8%E7%A2%BC%E7%9A%84%E6%96%87%E5%AD%97%E6%AA%94/)
 
  ===== FILES =====
 corpus.txt是此次作業的語料檔案，編碼為big5
@@ -98,3 +111,5 @@ separator_big5.pl執行方法為
 
 
 ## Usage
+- Separate training corpus into character-base: `perl separator_big5.pl corpus.txt >corpus_seg.txt`
+- Seperate all 9 testing data into character-base: `perl separator_big5.pl testdata/x.txt >testdata/seg_x.txt`
