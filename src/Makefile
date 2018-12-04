@@ -72,5 +72,5 @@ separate:
 clean:
 	$(RM) $(OBJ) $(TARGET)
 
-cleanest:
+cleanall:
 	$(RM) -r $(OBJ) $(TARGET) $(ANSDIR) $(TEST1DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm

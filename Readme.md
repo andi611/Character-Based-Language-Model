@@ -99,6 +99,14 @@ make run_disambig
 ```
 make run
 ```
+- **Clean executables**:
+```
+make clean
+```
+- **Clean everything generated in the above steps**:
+```
+make cleanall
+```
 
 
 
