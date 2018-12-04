@@ -73,7 +73,7 @@ MACHINE_TYPE := i686-m64
 
 
 ## Usage
-- Separate training and testing data into separate characters:
+- **Separate training and testing data into separate characters**:
 ```
 make separate
 ```
@@ -86,21 +86,18 @@ make map
 I) ZhuYin-Big5.map: the Zhu-Yin to Chinease character mapping in big5 encoding
 II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding for user verification in ordinary linux environment
 ```
-- **Get counts** with:
+- **Build language model**:
 ```
-/home/andi611/dsp/srilm-1.5.10/bin/i686-m64/ngram-count -text ./corpus_seg.txt -write ./lm.cnt -order 2
+make build_lm
 ```
-- **Compute probability**:
+
+- **Decode with SRILM disambig**:
 ```
-/home/andi611/dsp/srilm-1.5.10/bin/i686-m64/ngram-count -read ./lm.cnt -lm ./bigram.lm -unk -order 2
+make run_disambig
 ```
-- **Decode with SRILM disambig**: decode all 9 testing data one by one, OR
+- **Decode with MY disambig**:
 ```
-/home/andi611/dsp/srilm-1.5.10/bin/i686-m64/disambig -text ./testdata/seg_x.txt -map ./ZhuYin-Big5.map -lm ./bigram.lm -order 2 > ./result1/seg_x_ans.txt
-```
-- **Decode with SRILM disambig**: decode all 9 testing data with script
-```
-./run_disambig.sh
+make run
 ```
 
 
