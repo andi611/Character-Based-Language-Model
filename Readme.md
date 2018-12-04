@@ -28,9 +28,10 @@
 
 ### Compile SRILM from binary
 - The following instructions are for a **Ubuntu 64 bit** machine.
+![]()
 - Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz).
 - Untar the source code package: `$ tar zxvf srilm-1.5.10.tar.gz`
-- The resulting `srilm-1.5.10/` directory should be under the same directory as `src`.
+- **The resulting `srilm-1.5.10/` directory should be under the same directory as `src`**.
 - Enter the resulting SRILM directory: `$ cd srilm-1.5.10/`
 - Get the absolute path to the `srilm-1.5.10/` directory: `$ pwd`
 - Modify `srilm-1.5.10/Makefile` and change the SRILM variable to the absolute path of `srilm-1.5.10/`, and change the MACHINE_TYPE variable to match the 64-bit Ubuntu architecture:
