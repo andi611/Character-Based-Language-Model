@@ -28,7 +28,7 @@
 
 ### Compile SRILM from binary
 - The following instructions are for a **Ubuntu 64 bit** machine.
-![](https://github.com/andi611/Character-Based-Language-Model/blob/master/image/lscpu.png)
+<img src=https://github.com/andi611/Character-Based-Language-Model/blob/master/image/lscpu.png width="506" height="426">
 - Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz).
 - Untar the source code package: `$ tar zxvf srilm-1.5.10.tar.gz`
 - **The resulting `srilm-1.5.10/` directory should be under the same directory as `src`**.
