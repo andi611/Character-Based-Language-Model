@@ -24,9 +24,9 @@ TO2 = ZhuYin-Utf8.map
 FROM = Big5-ZhuYin.map
 .PHONY: all clean map run
 
-TEST1DIR=result1
+RESULT_1_DIR=result1
 TESTDATA=testdata
-ANSDIR=result2
+RESULT_2_DIR=result2
 
 all: $(TARGET)
 
@@ -38,11 +38,11 @@ $(TARGET): $(OBJ) -loolm -ldstruct -lmisc
 
 diff:
 	@for i in $(shell seq 1 10); do \
-		diff $(TEST1DIR)/$${i}.txt $(ANSDIR)/$${i}.txt; \
+		diff $(RESULT_1_DIR)/$${i}.txt $(RESULT_2_DIR)/$${i}.txt; \
 	done;
 
 run:
-	[ -d $(ANSDIR) ] || mkdir -p $(ANSDIR);
+	[ -d $(RESULT_2_DIR) ] || mkdir -p $(RESULT_2_DIR);
 	@for i in $(shell seq 1 10) ; do \
             echo "Running $$i.txt"; \
             ./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
@@ -54,13 +54,13 @@ map:
 
 
 build_lm:
-	$(SRIPATH)/bin/i686-m64/ngram-count -text seg_corpus.txt -write lm.cnt -order 2
-	$(SRIPATH)/bin/i686-m64/ngram-count -read lm.cnt -lm bigram.lm -unk -order 2
+	$(SRIPATH)/bin/$(MACHINE_TYPE)/ngram-count -text seg_corpus.txt -write lm.cnt -order 2
+	$(SRIPATH)/bin/$(MACHINE_TYPE)/ngram-count -read lm.cnt -lm bigram.lm -unk -order 2
 
 run_disambig: 
-	[ -d $(TEST1DIR) ] || mkdir -p $(TEST1DIR);
+	[ -d $(RESULT_1_DIR) ] || mkdir -p $(RESULT_1_DIR);
 	for i in $(shell seq 1 10); do \
-		$(SRIPATH)/bin/i686-m64/disambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(TEST1DIR)/$${i}.txt; \
+		$(SRIPATH)/bin/$(MACHINE_TYPE)/disambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(RESULT_1_DIR)/$${i}.txt; \
 	done;
 
 separate:
@@ -73,4 +73,8 @@ clean:
 	$(RM) $(OBJ) $(TARGET)
 
 cleanall:
-	$(RM) -r $(OBJ) $(TARGET) $(ANSDIR) $(TEST1DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
+	$(RM) -r $(OBJ) $(TARGET) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
+	for i in $(shell seq 1 10); do \
+		$(RM) $(TESTDATA)/seg_$${i}.txt; \
+	done
+
