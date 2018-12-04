@@ -18,7 +18,44 @@
 * **< g++ [gcc version 8.2.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 6.4.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 4.2.1 (GCC)] >** (Tested)
- 
+
+
+## Usage
+- **Separate training and testing data into separate characters**:
+```
+make separate
+```
+- **Build Zhu-Yin to char mapping**:
+```
+make map
+```
+- This generates 2 files: I) ZhuYin-Big5.map, and II) ZhuYin-Utf8.map where:
+```
+I) ZhuYin-Big5.map: the Zhu-Yin to Chinease character mapping in big5 encoding
+II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding for user verification in ordinary linux environment
+```
+- **Build language model**:
+```
+make build_lm
+```
+
+- **Decode with SRILM disambig**:
+```
+make run_disambig
+```
+- **Decode with MY disambig**:
+```
+make run
+```
+- **Clean executables**:
+```
+make clean
+```
+- **Clean everything generated in the above steps**:
+```
+make cleanall
+```
+
 
 ## Environment Setup
 
@@ -60,9 +97,7 @@ MACHINE_TYPE := i686-m64
 - Clean up: `$ make cleanest`
 - Check that there are executable files in `srilm-1.5.10/bin/i686-m64`
 
-### My C++ version of disambig
-
-### Other solutions
+### Other Environment Setup Issues
 - Refer to the following links for further environment issues:
     - SRILM compilation problem:
         - [FQA 1](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
@@ -70,45 +105,6 @@ MACHINE_TYPE := i686-m64
         - [Guide](http://www.52nlp.cn/ubuntu-64-bit-system-srilm-configuration)
     - Encoding problem:
         - [Sublime Text with BIG5 encoding](https://ephrain.net/sublime-text-%E8%AE%93-sublime-text-%E6%94%AF%E6%8F%B4-big5-%E7%B7%A8%E7%A2%BC%E7%9A%84%E6%96%87%E5%AD%97%E6%AA%94/)
-
-
-## Usage
-- **Separate training and testing data into separate characters**:
-```
-make separate
-```
-- **Build Zhu-Yin to char mapping**:
-```
-make map
-```
-- This generates 2 files: I) ZhuYin-Big5.map, and II) ZhuYin-Utf8.map where:
-```
-I) ZhuYin-Big5.map: the Zhu-Yin to Chinease character mapping in big5 encoding
-II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding for user verification in ordinary linux environment
-```
-- **Build language model**:
-```
-make build_lm
-```
-
-- **Decode with SRILM disambig**:
-```
-make run_disambig
-```
-- **Decode with MY disambig**:
-```
-make run
-```
-- **Clean executables**:
-```
-make clean
-```
-- **Clean everything generated in the above steps**:
-```
-make cleanall
-```
-
-
 
 
 ## TBC...working
