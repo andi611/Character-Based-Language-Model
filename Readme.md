@@ -1,8 +1,9 @@
-# Digital Signal Processing: Character-based Language Model
+# Digital Signal Processing: Character-Based Language Model
+
 
 ## Introduction
-- A character-based language model **implemented in C++**
-- A character-based language model build with the with the **SRILM toolkit**
+- A character-based language model build with the **SRILM toolkit**,
+- Plus, a viterbi-based decoding process of the language model **implemented in C++**.
 - Given ZhuYin-mixed sequences obtained from an imperfect acoustic models with phoneme loss, reconstruct and decode the correct sentence using a character-based language model, this language model can be construct with the SRILM toolkit or this C++ implementation.
 - Goal:
     - Given ZhuYin-mixed sequences: 讓 他 十分 ㄏ怕 / 只 ㄒ望 ㄗ己 明ㄋ 度 別 再 這ㄇ ㄎ命 了
@@ -21,14 +22,15 @@
 
 ## Environment Setup
 
-### Install Dependencies
+### Install dependencies
 - Install **csh** if not already installed: `$ sudo apt-get install csh`
 - Install **gawk** if not already installed: `$ sudo apt-get install gawk`
 
-### Compile SRILM
+### Compile SRILM from binary
 - The following instructions are for a **Ubuntu 64 bit** machine.
-- Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz)
+- Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz).
 - Untar the source code package: `$ tar zxvf srilm-1.5.10.tar.gz`
+- The resulting `srilm-1.5.10/` directory should be under the same directory as `src`.
 - Enter the resulting SRILM directory: `$ cd srilm-1.5.10/`
 - Get the absolute path to the `srilm-1.5.10/` directory: `$ pwd`
 - Modify `srilm-1.5.10/Makefile` and change the SRILM variable to the absolute path of `srilm-1.5.10/`, and change the MACHINE_TYPE variable to match the 64-bit Ubuntu architecture:
@@ -59,7 +61,7 @@ MACHINE_TYPE := i686-m64
 
 ### My C++ version of disambig
 
-### Other Solutions
+### Other solutions
 - Refer to the following links for further environment issues:
     - SRILM compilation problem:
         - [FQA 1](http://speech.ee.ntu.edu.tw/DSP2018Autumn/hw3/faq.html)
@@ -70,8 +72,50 @@ MACHINE_TYPE := i686-m64
 
 
 ## Usage
-- Separate training corpus into character-base: `perl separator_big5.pl corpus.txt >corpus_seg.txt`
-- Seperate all 9 testing data into character-base: `perl separator_big5.pl testdata/x.txt >testdata/seg_x.txt`
+
+### Data Preparation:
+- Separate training corpus into characters:
+```
+perl separator_big5.pl corpus.txt > corpus_seg.txt
+```
+- Separate all 9 testing data into characters one by one, OR: 
+```
+perl separator_big5.pl testdata/$I.txt > testdata/seg_$I.txt
+```
+- Separate all 9 testing data into characters with script: 
+```
+./run_separator.sh
+```
+
+### Train a character-based bigram LM with SRILM
+- **1) Build Zhu-Yin to char mapping**, under the `src` directory run:
+```
+python3 mapping.py Big5-ZhuYin.map ZhuYin-Big5.map
+```
+- This generates 2 files: I) ZhuYin-Big5.map, and II) ZhuYin-Utf8.map where:
+```
+I) ZhuYin-Big5.map: the Zhu-Yin to Chinease character mapping in big5 encoding
+II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding for user verification in ordinary linux environment
+```
+- 2) Get the absolute path to the `srilm-1.5.10/bin/i686-m64` directory with the command: `$ pwd`
+- **3) Get counts** with:
+```
+/home/andi611/dsp/srilm-1.5.10/bin/i686-m64/ngram-count -text ./corpus_seg.txt -write ./lm.cnt -order 2
+```
+- **4) Compute probability**:
+```
+/home/andi611/dsp/srilm-1.5.10/bin/i686-m64/ngram-count -read ./lm.cnt -lm ./bigram.lm -unk -order 2
+```
+- **5) Decode with SRILM disambig**: decode all 9 testing data one by one, OR
+```
+/home/andi611/dsp/srilm-1.5.10/bin/i686-m64/disambig -text ./testdata/seg_x.txt -map ./ZhuYin-Big5.map -lm ./bigram.lm -order 2 > ./result1/seg_x_ans.txt
+```
+- **5) Decode with SRILM disambig**: decode all 9 testing data with script
+```
+./run_disambig.sh
+```
+
+
 
 
 ## TBC...working
