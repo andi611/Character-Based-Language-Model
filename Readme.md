@@ -73,45 +73,32 @@ MACHINE_TYPE := i686-m64
 
 
 ## Usage
-
-### Data Preparation:
-- Separate training corpus into characters:
+- Separate training and testing data into separate characters:
 ```
-perl separator_big5.pl corpus.txt > corpus_seg.txt
+make separate
 ```
-- Separate all 9 testing data into characters one by one, OR: 
+- **Build Zhu-Yin to char mapping**:
 ```
-perl separator_big5.pl testdata/$I.txt > testdata/seg_$I.txt
-```
-- Separate all 9 testing data into characters with script: 
-```
-./run_separator.sh
-```
-
-### Train a character-based bigram LM with SRILM
-- **1) Build Zhu-Yin to char mapping**, under the `src` directory run:
-```
-python3 mapping.py Big5-ZhuYin.map ZhuYin-Big5.map
+make map
 ```
 - This generates 2 files: I) ZhuYin-Big5.map, and II) ZhuYin-Utf8.map where:
 ```
 I) ZhuYin-Big5.map: the Zhu-Yin to Chinease character mapping in big5 encoding
 II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding for user verification in ordinary linux environment
 ```
-- 2) Get the absolute path to the `srilm-1.5.10/bin/i686-m64` directory with the command: `$ pwd`
-- **3) Get counts** with:
+- **Get counts** with:
 ```
 /home/andi611/dsp/srilm-1.5.10/bin/i686-m64/ngram-count -text ./corpus_seg.txt -write ./lm.cnt -order 2
 ```
-- **4) Compute probability**:
+- **Compute probability**:
 ```
 /home/andi611/dsp/srilm-1.5.10/bin/i686-m64/ngram-count -read ./lm.cnt -lm ./bigram.lm -unk -order 2
 ```
-- **5) Decode with SRILM disambig**: decode all 9 testing data one by one, OR
+- **Decode with SRILM disambig**: decode all 9 testing data one by one, OR
 ```
 /home/andi611/dsp/srilm-1.5.10/bin/i686-m64/disambig -text ./testdata/seg_x.txt -map ./ZhuYin-Big5.map -lm ./bigram.lm -order 2 > ./result1/seg_x_ans.txt
 ```
-- **5) Decode with SRILM disambig**: decode all 9 testing data with script
+- **Decode with SRILM disambig**: decode all 9 testing data with script
 ```
 ./run_disambig.sh
 ```
