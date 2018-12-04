@@ -20,6 +20,7 @@ TARGET = mydisambig
 SRC = mydisambig.cpp
 OBJ = $(SRC:.cpp=.o)
 TO = ZhuYin-Big5.map
+TO2 = ZhuYin-Utf8.map
 FROM = Big5-ZhuYin.map
 .PHONY: all clean map run
 
@@ -49,7 +50,7 @@ run:
 
 map:
 	echo "Mapping!"
-	python3 mapping.py $(FROM) $(TO)
+	python3 mapping.py $(FROM) $(TO) --output_utf8 $(TO2)
 
 
 build_lm:
@@ -72,4 +73,4 @@ clean:
 	$(RM) $(OBJ) $(TARGET)
 
 cleanest:
-	$(RM) -r $(OBJ) $(TARGET) $(ANSDIR) $(TO) seg_corpus.txt lm.cnt 
+	$(RM) -r $(OBJ) $(TARGET) $(ANSDIR) $(TEST1DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
