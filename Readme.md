@@ -42,6 +42,10 @@
 
 
 ## Usage
+- **Compile code**:
+```
+make all
+```
 - **Separate training and testing data into separate characters**:
 ```
 make separate
@@ -59,7 +63,6 @@ II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding 
 ```
 make build_lm
 ```
-
 - **Decode with SRILM disambig**:
 ```
 make run_disambig
@@ -76,6 +79,17 @@ make clean
 ```
 make cleanest
 ```
+- The variables `SRIPATH` and `MACHINE_TYPE` can be specified by the user through the make command:
+```
+make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 all
+make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 separate
+make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 map
+make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 build_lm
+make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 run_disambig
+make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 run
+```
+- Default settings of `SRIPATH` and `MACHINE_TYPE` are:
+- <img src=https://github.com/andi611/Character-Based-Language-Model/blob/master/image/variables.png width="300" height="31">
 
 
 ## <a name="Setup"></a>Environment Setup
