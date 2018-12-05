@@ -6,8 +6,10 @@
 - Plus, a viterbi-based decoding process of the language model **implemented in C++**.
 - Given ZhuYin-mixed sequences obtained from an imperfect acoustic models with phoneme loss, reconstruct and decode the correct sentence using a character-based language model, this language model can be construct with the SRILM toolkit or this C++ implementation.
 - Goal:
-    - Given ZhuYin-mixed sequences: 讓 他 十分 ㄏ怕 / 只 ㄒ望 ㄗ己 明ㄋ 度 別 再 這ㄇ ㄎ命 了
-    - Reconstruct correct sentence: 讓 他 十分 害怕 / 只 希望 自己 明年 度 別 再 這麼 苦命 了
+    - Given ZhuYin-mixed sequences: 
+    	- 讓 他 十分 ㄏ怕 / 只 ㄒ望 ㄗ己 明ㄋ 度 別 再 這ㄇ ㄎ命 了
+    - Reconstruct correct sentence: 
+    	- 讓 他 十分 害怕 / 只 希望 自己 明年 度 別 再 這麼 苦命 了
 
 
 ## Environment
