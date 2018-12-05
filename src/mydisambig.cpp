@@ -1,24 +1,25 @@
 /* -*- coding: utf-8 -*- */
-/****************************************************************************
+/*******************************************************************************************
  * FileName     [ mydisambig.cpp ]
  * Synopsis     [ Implementation of a viterbi-based decoding process of the language model ]
  * Author       [ Ting-Wei Liu (Andi611) ]
  * Copyright    [ Copyleft(c), NTUEE, NTU, Taiwan ]
  * Reference    [ https://github.com/orbxball/DSP/blob/master/hw3/mydisambig.cpp ]
-****************************************************************************/
+*******************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <vector>
 #include <iostream>
 using namespace std;
-/***************************************************************************/
+/*****************************************************************************************************/
 #include "File.h"
-#include "Prob.h"           // About Probability
-#include "LM.h"             // Basic interface of Language Model
-#include "Ngram.h"          // Inherit from LM.h
-#include "Vocab.h"          // Vocabulary: Here is for set of Chinese Character
-#include "VocabMap.h"       // Vocabulary map: two vocabulary mapping
+#include "Prob.h"
+#include "LM.h"
+#include "Ngram.h"
+#include "Vocab.h"
+#include "VocabMap.h"
 #include "VocabMultiMap.h"
 /******************************************************************************************************
  * Available Constants in .h
@@ -36,11 +37,11 @@ using namespace std;
 /*          Macro Definition          */
 /**************************************/
 #ifndef CANDIDATE
-#define CANDIDATE 1000
+#define CANDIDATE 1024
 #endif
 
 #ifndef LEN
-#define LEN 200
+#define LEN 256
 #endif
 
 #ifndef SMALL
@@ -59,103 +60,148 @@ void program_backoff(const string s, bool keyword_error) {
 }
 
 
+/**************************************/
+/*           Viterbi Decode           */
+/**************************************/
+void viterbi_decode(Ngram lm, 
+                    VocabMap map, 
+                    Vocab voc, 
+                    Vocab ZhuYin, 
+                    Vocab Big5, 
+                    int count, 
+                    VocabString* line, 
+                    vector<vector<LogP>>* prob, 
+                    vector<vector<VocabIndex>>* vidx_graph, 
+                    vector<vector<int>>* backtrack, 
+                    vector<int>* candi_num,
+                    VocabIndex v_idx,
+                    VocabIndex* empty_context,
+                    VocabIndex* bi_context) {
+    
+    
+    /******* Initialize variable *******/
+    Prob p;
+    int size = 0;
+    VocabMapIter iter(map, ZhuYin.getIndex(line[0]));
+    iter.init();
+
+
+    /******* Initialization for Viterbi *******/
+    while (iter.next(v_idx, p)) {
+        VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
+
+        // if we cannot find the word in voc, we should mark it Unknown rather than discard it
+        candi = (candi == Vocab_None)? voc.getIndex(Vocab_Unknown): candi;
+
+        LogP logp = lm.wordProb(candi, empty_context); //unigram for start <s>
+        prob->at(0).at(size) = (logp == LogP_Zero)? SMALL: logp;
+        vidx_graph->at(0).at(size) = v_idx;
+        backtrack->at(0).at(size) = -1; // start: -1
+        size++;
+    }
+    candi_num->at(0) = size;
+
+
+    /******* Recursion for Viterbi *******/
+    for (int i = 1; i < count; i++) {
+        VocabMapIter iter(map, ZhuYin.getIndex(line[i]));
+        iter.init();
+        size = 0;
+        while (iter.next(v_idx, p)) {
+            VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
+            candi = (candi == Vocab_None)? voc.getIndex(Vocab_Unknown): candi;
+
+            // See last column which has the highest probability
+            LogP maxp = LogP_Zero;
+            for (int j = 0; j < candi_num->at(i-1); j++) {
+                VocabIndex last = voc.getIndex(Big5.getWord(vidx_graph->at(i-1).at(j)));
+                last = (last == Vocab_None)? voc.getIndex(Vocab_Unknown): last;
+                bi_context[0] = last;
+
+                LogP logp = lm.wordProb(candi, bi_context);
+                // Check backoff!!! VERY IMPORTANT!!! 
+                LogP backoff = lm.wordProb(candi, empty_context);
+                if (logp == LogP_Zero && backoff == LogP_Zero) logp == SMALL;
+
+                logp += prob->at(i-1).at(j);
+                if (logp > maxp) {
+                    maxp = logp;
+                    backtrack->at(i).at(size) = j;
+                }
+            }
+            prob->at(i).at(size) = maxp;
+            vidx_graph->at(i).at(size) = v_idx;
+            size++;
+        }
+        if (size > CANDIDATE) cout << size << endl;
+        candi_num->at(i) = size;
+    }
+}
+
+
+/*********************************************/
+/*           Language Model Decode           */
+/*********************************************/
 void lm_decode(Ngram lm, File& text_file, VocabMap map, Vocab voc, Vocab ZhuYin, Vocab Big5) {
+    
     /******* Go through the text file *******/
     char* buf;
     while(buf = text_file.getline()) {
 
-        // Need to parse to words, otherwise char* will not work
+
+        /******* Parse to VocabString a.k.a char* *******/
         VocabString line[maxWordsPerLine];
         unsigned int count = Vocab::parseWords(buf, &(line[1]), maxWordsPerLine);
         line[0] = "<s>";
         line[count+1] = "</s>";
         count += 2;
 
-        // Parameter
-        LogP Proba[LEN][CANDIDATE] = {{0.0}};
-        VocabIndex VidxGraph[LEN][CANDIDATE]; // Record the (i, j) VocalIndex of Big5
-        int Backtrack[LEN][CANDIDATE];
-        int CandiNum[LEN];
 
-        Prob p;
-        VocabIndex v_idx; //Be mapped by ZhuYin, which is a VocabIndex of Big5
+        /******* Initialize variables *******/
+        vector<vector<LogP>>* prob = new vector<vector<LogP>>(LEN, vector<LogP>(CANDIDATE, 0.0));
+        vector<vector<VocabIndex>>* vidx_graph = new vector<vector<VocabIndex>>(LEN, vector<VocabIndex>(CANDIDATE, 0)); // Record the (i, j) VocalIndex of Big5
+        vector<vector<int>>* backtrack = new vector<vector<int>>(LEN, vector<int>(CANDIDATE, 0));
+        vector<int>* candi_num = new vector<int>(LEN, 0);
+        VocabIndex v_idx; // Be mapped by ZhuYin, which is a VocabIndex of Big5
         VocabIndex empty_context[] = {Vocab_None};
         VocabIndex bi_context[] = {Vocab_None, Vocab_None};
 
-        // Initialization for Viterbi
-        VocabMapIter iter(map, ZhuYin.getIndex(line[0]));
-        iter.init();
-        int size = 0;
-        while (iter.next(v_idx, p)) {
-            VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
 
-            // if we cannot find the word in voc, we should mark it Unknown rather than discard it
-            candi = (candi == Vocab_None)? voc.getIndex(Vocab_Unknown): candi;
-
-            LogP logp = lm.wordProb(candi, empty_context); //unigram for start <s>
-            Proba[0][size] = (logp == LogP_Zero)? SMALL: logp;
-            VidxGraph[0][size] = v_idx;
-            Backtrack[0][size] = -1; // start: -1
-            size++;
-        }
-        CandiNum[0] = size;
-
+        /******* Viterbi decoding *******/
+        viterbi_decode(lm, map, voc, ZhuYin, Big5, count, line, 
+                       prob, vidx_graph, backtrack, candi_num, 
+                       v_idx, empty_context, bi_context);
         
-        // Recursion for Viterbi
-        for (int i = 1; i < count; i++) {
-            VocabMapIter iter(map, ZhuYin.getIndex(line[i]));
-            iter.init();
-            size = 0;
-            while (iter.next(v_idx, p)) {
-                VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
-                candi = (candi == Vocab_None)? voc.getIndex(Vocab_Unknown): candi;
 
-                // See last column which has the highest probability
-                LogP maxp = LogP_Zero;
-                for (int j = 0; j < CandiNum[i-1]; j++) {
-                    VocabIndex last = voc.getIndex(Big5.getWord(VidxGraph[i-1][j]));
-                    last = (last == Vocab_None)? voc.getIndex(Vocab_Unknown): last;
-                    bi_context[0] = last;
-
-                    LogP logp = lm.wordProb(candi, bi_context);
-                    // Check backoff!!! VERY IMPORTANT!!! 
-                    LogP backoff = lm.wordProb(candi, empty_context);
-                    if (logp == LogP_Zero && backoff == LogP_Zero) logp == SMALL;
-
-                    logp += Proba[i-1][j];
-                    if (logp > maxp) {
-                        maxp = logp;
-                        Backtrack[i][size] = j;
-                    }
-                }
-                Proba[i][size] = maxp;
-                VidxGraph[i][size] = v_idx;
-                size++;
-            }
-            CandiNum[i] = size;
-        }
-
-        // Find the Max Probability path
+        /******* Find the max probability path *******/
         LogP maxp = LogP_Zero;
-        int max_col = -1, j;
-        for (j = 0; j < CandiNum[count-1]; j++) {
-            if (Proba[count-1][j] > maxp) {
-                maxp = Proba[count-1][j];
-                max_col = j;
+        int max_col = -1;
+        for (int i = 0; i < candi_num->at(count-1); i++) {
+            if (prob->at(count-1).at(i) > maxp) {
+                maxp = prob->at(count-1).at(i);
+                max_col = i;
             }
         }
 
-        VocabString AnsPath[maxWordLength];
-        AnsPath[0] = "<s>";
-        AnsPath[count-1] = "</s>";
+        VocabString decode_path[maxWordLength];
+        decode_path[0] = "<s>";
+        decode_path[count-1] = "</s>";
         for (int i = count-1; i > 0; i--) {
-            AnsPath[i] = Big5.getWord(VidxGraph[i][max_col]);
-            max_col = Backtrack[i][max_col];
+            decode_path[i] = Big5.getWord(vidx_graph->at(i).at(max_col));
+            max_col = backtrack->at(i).at(max_col);
         }
 
-        // Print the Answer Path
+
+        /******* Output answer path *******/
         for (int i = 0; i < count; i++)
-            printf("%s%s", AnsPath[i], (i == count-1)? "\n": " ");
+            printf("%s%s", decode_path[i], (i == count-1)? "\n": " ");
+
+
+        /******* Clean up *******/
+        delete prob;
+        delete vidx_graph;
+        delete backtrack;
+        delete candi_num;
     }
     
 }
@@ -177,20 +223,22 @@ int main (int argc, char* argv[]) {
     const string argv_3(argv[3]);
     const string argv_5(argv[5]);
     const string argv_7(argv[7]);
+
     if (argv_1.substr(argv_1.find(arg_text), 4) != arg_text) program_backoff(argv_1, true);
     if (argv_3.substr(argv_3.find(arg_map), 3) != arg_map) program_backoff(argv_3, true);
     if (argv_5.substr(argv_5.find(arg_lm), 2) != arg_lm) program_backoff(argv_5, true);
     if (argv_7.substr(argv_7.find(arg_order), 5) != arg_order) program_backoff(argv_7, true);
 
-    
     const char* arg_text_value = argv[2];
     const char* arg_map_value = argv[4];
     const char* arg_lm_value = argv[6];
     const int arg_order_value = atoi(argv[8]);
 
+
     /******* Initialize extern parameter *******/
     Vocab voc;
     Vocab ZhuYin, Big5;
+
 
     /******* Read Map *******/
     VocabMap map(ZhuYin, Big5);
@@ -198,14 +246,17 @@ int main (int argc, char* argv[]) {
     map.read(map_file);
     map_file.close();
 
+
     /******* Read Language Model *******/
     Ngram lm(voc, arg_order_value);
     File lm_file(arg_lm_value, "r");
     lm.read(lm_file);
     lm_file.close();
     
+
     /******* Read the testdata *******/
     File text_file(arg_text_value, "r");
+
 
     /******* Language model decoding *******/
     lm_decode(lm, text_file, map, voc, ZhuYin, Big5);

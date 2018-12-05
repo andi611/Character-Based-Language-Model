@@ -47,6 +47,13 @@ run:
             echo "Running $$i.txt"; \
             ./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
         done;
+
+run_cout:
+	[ -d $(RESULT_2_DIR) ] || mkdir -p $(RESULT_2_DIR);
+	@for i in $(shell seq 1 10) ; do \
+            echo "Running $$i.txt"; \
+            ./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2; \
+        done;
 		  # ./mydisambig –text testdata/seg_1.txt –map ZhuYin-Big5.map –lm bigram.lm –order 2 > result2/1.txt
 
 map:
