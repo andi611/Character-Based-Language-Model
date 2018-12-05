@@ -90,6 +90,8 @@ make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 run
 ```
 - Default settings of `SRIPATH` and `MACHINE_TYPE` are:
 - <img src=https://github.com/andi611/Character-Based-Language-Model/blob/master/image/variables.png width="300" height="31">
+- `SRIPATH` can be obtained by running the command `$ pwd` under the `srilm-1.5.10/` directory.
+- `MACHINE_TYPE` can be verified through the command: `$ lscpu`
 
 
 ## <a name="Setup"></a>Environment Setup
