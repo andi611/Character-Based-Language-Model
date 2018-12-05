@@ -71,6 +71,10 @@ make run_disambig
 ```
 make run
 ```
+- **Decode with MY disambig** but show output on screen instead of write to file:
+```
+make run_cout
+```
 - **Clean executables**:
 ```
 make clean
@@ -103,9 +107,8 @@ make MACHINE_TYPE=i686-m64 SRIPATH=/home/user/srilm-1.5.10 run
 ### Compile SRILM from binary
 - The following instructions are for a **Ubuntu 64 bit** machine.
 - <img src=https://github.com/andi611/Character-Based-Language-Model/blob/master/image/lscpu.png width="506" height="426">
-- Use the SRILM source code provided, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz).
+- Use the SRILM source code provided in this repo, or download it [here](http://speech.ee.ntu.edu.tw/homework/DSP_HW3/srilm-1.5.10.tar.gz).
 - Untar the source code package: `$ tar zxvf srilm-1.5.10.tar.gz`
-- **The resulting `srilm-1.5.10/` directory should be under the same directory as `src`**.
 - Enter the resulting SRILM directory: `$ cd srilm-1.5.10/`
 - Get the absolute path to the `srilm-1.5.10/` directory: `$ pwd`
 - Modify `srilm-1.5.10/Makefile` and change the SRILM variable to the absolute path of `srilm-1.5.10/`, and change the MACHINE_TYPE variable to match the 64-bit Ubuntu architecture:
@@ -128,11 +131,11 @@ MACHINE_TYPE := i686-m64
 - Line 69: 
     GAWK = /usr/bin/gawk
 ```
-- Comment out line 14 ~ 29 in `srilm-1.5.10/lm/src/matherr.c` since glibc 2.27 has removed struct exception.
+- **Comment out lines 14 ~ 29 in `srilm-1.5.10/lm/src/matherr.c` since glibc 2.27 has removed struct exception.**
 - Make sure that all the programs under `srilm-1.5.10/sbin` are executable, if not: `$ sudo chmod 755 *`
 - Compile: `$ sudo make World`
 - Clean up: `$ make cleanest`
-- Check that there are executable files in `srilm-1.5.10/bin/i686-m64`
+- The compiled executable files should be in `srilm-1.5.10/bin/i686-m64`
 
 ### Other Environment Setup Issues
 - Refer to the following links for further environment issues:
