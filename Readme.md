@@ -14,7 +14,8 @@
 * **< Ubuntu 6.4.0-17 >**    
     * Computer Architecture: x86_64
     * CPU op-mode(s): 32-bit, 64-bit           
-* **< [SRILM 1.5.10](http://www.speech.sri.com/projects/srilm/) >** -> [Installation Guide](#Setup)
+* **< [SRILM 1.5.10](http://www.speech.sri.com/projects/srilm/) >** 
+	-> [How to Install SRILM](#Setup)
 * **< g++ [gcc version 8.2.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 6.4.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 4.2.1 (GCC)] >** (Tested)
