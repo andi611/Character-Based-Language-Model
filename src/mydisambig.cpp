@@ -1,14 +1,40 @@
+/* -*- coding: utf-8 -*- */
+/****************************************************************************
+ * FileName     [ mydisambig.cpp ]
+ * Synopsis     [ Implementation of a viterbi-based decoding process of the language model ]
+ * Author       [ Ting-Wei Liu (Andi611) ]
+ * Copyright    [ Copyleft(c), NTUEE, NTU, Taiwan ]
+ * Reference    [ https://github.com/orbxball/DSP/blob/master/hw3/mydisambig.cpp ]
+****************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <string>
+#include <iostream>
+using namespace std;
+/***************************************************************************/
 #include "File.h"
-#include "Prob.h"       // About Probability
-#include "LM.h"         // Basic interface of Language Model
-#include "Ngram.h"      // Inherit from LM.h
-#include "Vocab.h"      // Vocabulary: Here is for set of Chinese Character
-#include "VocabMap.h"   // Vocabulary map: two vocabulary mapping
+#include "Prob.h"           // About Probability
+#include "LM.h"             // Basic interface of Language Model
+#include "Ngram.h"          // Inherit from LM.h
+#include "Vocab.h"          // Vocabulary: Here is for set of Chinese Character
+#include "VocabMap.h"       // Vocabulary map: two vocabulary mapping
 #include "VocabMultiMap.h"
+/******************************************************************************************************
+ * Available Constants in .h
+ * --------------------------------
+ * maxWordsPerLine = 50000 (File.h)
+ * maxWordLength = 1024 (Vocab.h)
+ * Log_Zero = -inf (Prob.h)
+ * Log_Inf = inf (Prob.h)
+ * Log_One = 0 (Prob.h)
+ * Vocab_None: A special VocabIndex used to denote no vocabulary item and to terminate VocabIndex arrays
+*******************************************************************************************************/
 
 
+/**************************************/
+/*          Macro Definition          */
+/**************************************/
 #ifndef CANDIDATE
 #define CANDIDATE 1000
 #endif
@@ -21,74 +47,74 @@
 #define SMALL -100
 #endif
 
-/***
- * Available Constant in .h
- * ----------------------------------
- * maxWordsPerLine = 50000 (File.h)
- * maxWordLength = 1024 (Vocab.h)
- * Log_Zero = -inf (Prob.h)
- * Log_Inf = inf (Prob.h)
- * Log_One = 0 (Prob.h)
- * Vocab_None: A special VocabIndex used to denote no vocabulary item and to terminate VocabIndex arrays
-***/
 
+/***************************************/
+/*           Program Backoff           */
+/***************************************/
+void program_backoff(const string s, bool keyword_error) {
+    if (keyword_error) cerr << "Error >>> Invalid Argument: " << s << endl;
+    else cerr << "Error >>> Invalid number of argument: " << s << endl;
+    cerr << "Usage: ./mydisambig -text [testing file] -map [mapping file] -lm [language model] -order [order of ngram language model] > [output file path]\n" << endl;
+    exit(1);
+}
+
+
+/*************************************/
+/*           Main Function           */
+/*************************************/
 int main (int argc, char* argv[]) {
-    if (argc != 9) {
-        fprintf(stderr, "Usage:\n");
-        fprintf(stderr, "./mydisambig -text [file] -map [map] -lm [LM] -order [orderNum]\n");
-        exit(1);
-    }
 
-    /*** Initiailize arguments ***/
-    const char* text_filename = argv[2];
-    const char* map_filename = argv[4];
-    const char* lm_filename = argv[6];
-    int order = atoi(argv[8]);
+    /******* Parse arguments *******/
+    const string arg_text("text");
+    const string arg_map("map");
+    const string arg_lm("lm");
+    const string arg_order("order");
+    if (argc != 9) program_backoff(to_string(argc), false);
 
-    /*** Initialize extern parameter ***/
+    const string argv_1(argv[1]);
+    const string argv_3(argv[3]);
+    const string argv_5(argv[5]);
+    const string argv_7(argv[7]);
+    if (argv_1.substr(argv_1.find(arg_text), 4) != arg_text) program_backoff(argv_1, true);
+    if (argv_3.substr(argv_3.find(arg_map), 3) != arg_map) program_backoff(argv_3, true);
+    if (argv_5.substr(argv_5.find(arg_lm), 2) != arg_lm) program_backoff(argv_5, true);
+    if (argv_7.substr(argv_7.find(arg_order), 5) != arg_order) program_backoff(argv_7, true);
+
+    
+    const char* arg_text_value = argv[2];
+    const char* arg_map_value = argv[4];
+    const char* arg_lm_value = argv[6];
+    const int arg_order_value = atoi(argv[8]);
+
+    /******* Initialize extern parameter *******/
     Vocab voc;
     Vocab ZhuYin, Big5;
 
-    Ngram lm(voc, order);
-    //VocabMultiMap map(ZhuYin, Big5);
+    /******* Read Map *******/
     VocabMap map(ZhuYin, Big5);
+    File map_file(arg_map_value, "r");
+    map.read(map_file);
+    map_file.close();
 
-    /*** Read in the map & language model ***/
-    File mapFile(map_filename, "r");
-    map.read(mapFile);
-    mapFile.close();
-
-    File lmFile(lm_filename, "r");
-    lm.read(lmFile);
-    lmFile.close();
+    /******* Read Language Model *******/
+    Ngram lm(voc, arg_order_value);
+    File lm_file(arg_lm_value, "r");
+    lm.read(lm_file);
+    lm_file.close();
     
-    /*** Read the testdata ***/
-    File textfile(text_filename, "r");
+    /******* Read the testdata *******/
+    File text_file(arg_text_value, "r");
+
+    /******* Go through the text file *******/
     char* buf;
-    while(buf = textfile.getline()) {
-        VocabString sen[maxWordsPerLine];
+    while(buf = text_file.getline()) {
+
         // Need to parse to words, otherwise char* will not work
-        unsigned int count = Vocab::parseWords(buf, &(sen[1]), maxWordsPerLine);
-        sen[0] = "<s>";
-        sen[count+1] = "</s>";
+        VocabString line[maxWordsPerLine];
+        unsigned int count = Vocab::parseWords(buf, &(line[1]), maxWordsPerLine);
+        line[0] = "<s>";
+        line[count+1] = "</s>";
         count += 2;
-        
-        /*for (int i = 1; i < count-1; i++)
-            printf(">%s<%s", sen[i], (i == count-1)?"\n":"");
-        */
-
-        /*** VocabIter Example
-        VocabIter iter(ZhuYin);
-        iter.init();
-        VocabIndex i;
-        while (i = ZhuYin.getIndex(iter.next())) 
-            printf("%d %s\n", i, ZhuYin.getWord(i));
-        ***/
-
-        /*** 
-         * Viterbi for the sentence "sen"
-         * for a sentence execute "count" times 
-        ***/
 
         // Parameter
         LogP Proba[LEN][CANDIDATE] = {{0.0}};
@@ -97,17 +123,17 @@ int main (int argc, char* argv[]) {
         int CandiNum[LEN];
 
         Prob p;
-        VocabIndex v_idx; //Be mapped by ZhuYin, which is a VocalIndex of Big5
+        VocabIndex v_idx; //Be mapped by ZhuYin, which is a VocabIndex of Big5
         VocabIndex empty_context[] = {Vocab_None};
         VocabIndex bi_context[] = {Vocab_None, Vocab_None};
 
         // Initialization for Viterbi
-        VocabMapIter iter(map, ZhuYin.getIndex(sen[0]));
+        VocabMapIter iter(map, ZhuYin.getIndex(line[0]));
         iter.init();
         int size = 0;
         while (iter.next(v_idx, p)) {
             VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
-            //if (candi == Vocab_None) continue;
+
             // if we cannot find the word in voc, we should mark it Unknown rather than discard it
             candi = (candi == Vocab_None)? voc.getIndex(Vocab_Unknown): candi;
 
@@ -119,11 +145,10 @@ int main (int argc, char* argv[]) {
         }
         CandiNum[0] = size;
 
-        //for (int j = 0; j < CandiNum[0]; j++) printf("prob:%f\n", Proba[0][j]);
         
         // Recursion for Viterbi
         for (int i = 1; i < count; i++) {
-            VocabMapIter iter(map, ZhuYin.getIndex(sen[i]));
+            VocabMapIter iter(map, ZhuYin.getIndex(line[i]));
             iter.init();
             size = 0;
             while (iter.next(v_idx, p)) {
@@ -154,13 +179,6 @@ int main (int argc, char* argv[]) {
             }
             CandiNum[i] = size;
         }
-/*
-        for (int i = 0; i < count; i++) {
-            for (int j = 0; j < CandiNum[i]; j++)
-                printf("%f ", Proba[i][j]);
-            printf("\n");
-        }
-*/
 
         // Find the Max Probability path
         LogP maxp = LogP_Zero;
@@ -171,8 +189,6 @@ int main (int argc, char* argv[]) {
                 max_col = j;
             }
         }
-        
-        //printf("%d, %f, %d\n", max_col, maxp, Backtrack[count-1][0]);
 
         VocabString AnsPath[maxWordLength];
         AnsPath[0] = "<s>";
@@ -183,10 +199,11 @@ int main (int argc, char* argv[]) {
         }
 
         // Print the Answer Path
-        for (int i = 0; i < count; i++)
-            printf("%s%s", AnsPath[i], (i == count-1)? "\n": " ");
+        // for (int i = 0; i < count; i++)
+        //     printf("%s%s", AnsPath[i], (i == count-1)? "\n": " ");
     }
-    textfile.close();
-
+    
+    text_file.close();
     return 0;
 }
+

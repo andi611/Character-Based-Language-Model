@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- #
 #*********************************************************************************************#
-#   FileName     [ template.py ]
-#   Synopsis     [ code template ]
+#   FileName     [ Makefile ]
+#   Synopsis     [ make file that runs everything ]
 #   Author       [ Ting-Wei Liu (Andi611) ]
 #   Copyright    [ Copyleft(c), NTUEE, NTU, Taiwan ]
 #   Reference    [ https://github.com/orbxball/DSP/blob/master/hw3/Makefile ]
@@ -47,6 +47,7 @@ run:
             echo "Running $$i.txt"; \
             ./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
         done;
+		  # ./mydisambig –text testdata/seg_1.txt –map ZhuYin-Big5.map –lm bigram.lm –order 2 > result2/1.txt
 
 map:
 	echo "Mapping!"
@@ -72,7 +73,7 @@ separate:
 clean:
 	$(RM) $(OBJ) $(TARGET)
 
-cleanall:
+cleanest:
 	$(RM) -r $(OBJ) $(TARGET) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
 	for i in $(shell seq 1 10); do \
 		$(RM) $(TESTDATA)/seg_$${i}.txt; \
