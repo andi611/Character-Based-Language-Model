@@ -59,52 +59,7 @@ void program_backoff(const string s, bool keyword_error) {
 }
 
 
-/*************************************/
-/*           Main Function           */
-/*************************************/
-int main (int argc, char* argv[]) {
-
-    /******* Parse arguments *******/
-    const string arg_text("text");
-    const string arg_map("map");
-    const string arg_lm("lm");
-    const string arg_order("order");
-    if (argc != 9) program_backoff(to_string(argc), false);
-
-    const string argv_1(argv[1]);
-    const string argv_3(argv[3]);
-    const string argv_5(argv[5]);
-    const string argv_7(argv[7]);
-    if (argv_1.substr(argv_1.find(arg_text), 4) != arg_text) program_backoff(argv_1, true);
-    if (argv_3.substr(argv_3.find(arg_map), 3) != arg_map) program_backoff(argv_3, true);
-    if (argv_5.substr(argv_5.find(arg_lm), 2) != arg_lm) program_backoff(argv_5, true);
-    if (argv_7.substr(argv_7.find(arg_order), 5) != arg_order) program_backoff(argv_7, true);
-
-    
-    const char* arg_text_value = argv[2];
-    const char* arg_map_value = argv[4];
-    const char* arg_lm_value = argv[6];
-    const int arg_order_value = atoi(argv[8]);
-
-    /******* Initialize extern parameter *******/
-    Vocab voc;
-    Vocab ZhuYin, Big5;
-
-    /******* Read Map *******/
-    VocabMap map(ZhuYin, Big5);
-    File map_file(arg_map_value, "r");
-    map.read(map_file);
-    map_file.close();
-
-    /******* Read Language Model *******/
-    Ngram lm(voc, arg_order_value);
-    File lm_file(arg_lm_value, "r");
-    lm.read(lm_file);
-    lm_file.close();
-    
-    /******* Read the testdata *******/
-    File text_file(arg_text_value, "r");
-
+void lm_decode(Ngram lm, File& text_file, VocabMap map, Vocab voc, Vocab ZhuYin, Vocab Big5) {
     /******* Go through the text file *******/
     char* buf;
     while(buf = text_file.getline()) {
@@ -199,11 +154,63 @@ int main (int argc, char* argv[]) {
         }
 
         // Print the Answer Path
-        // for (int i = 0; i < count; i++)
-        //     printf("%s%s", AnsPath[i], (i == count-1)? "\n": " ");
+        for (int i = 0; i < count; i++)
+            printf("%s%s", AnsPath[i], (i == count-1)? "\n": " ");
     }
     
+}
+
+
+/*************************************/
+/*           Main Function           */
+/*************************************/
+int main (int argc, char* argv[]) {
+
+    /******* Parse arguments *******/
+    const string arg_text("text");
+    const string arg_map("map");
+    const string arg_lm("lm");
+    const string arg_order("order");
+    if (argc != 9) program_backoff(to_string(argc), false);
+
+    const string argv_1(argv[1]);
+    const string argv_3(argv[3]);
+    const string argv_5(argv[5]);
+    const string argv_7(argv[7]);
+    if (argv_1.substr(argv_1.find(arg_text), 4) != arg_text) program_backoff(argv_1, true);
+    if (argv_3.substr(argv_3.find(arg_map), 3) != arg_map) program_backoff(argv_3, true);
+    if (argv_5.substr(argv_5.find(arg_lm), 2) != arg_lm) program_backoff(argv_5, true);
+    if (argv_7.substr(argv_7.find(arg_order), 5) != arg_order) program_backoff(argv_7, true);
+
+    
+    const char* arg_text_value = argv[2];
+    const char* arg_map_value = argv[4];
+    const char* arg_lm_value = argv[6];
+    const int arg_order_value = atoi(argv[8]);
+
+    /******* Initialize extern parameter *******/
+    Vocab voc;
+    Vocab ZhuYin, Big5;
+
+    /******* Read Map *******/
+    VocabMap map(ZhuYin, Big5);
+    File map_file(arg_map_value, "r");
+    map.read(map_file);
+    map_file.close();
+
+    /******* Read Language Model *******/
+    Ngram lm(voc, arg_order_value);
+    File lm_file(arg_lm_value, "r");
+    lm.read(lm_file);
+    lm_file.close();
+    
+    /******* Read the testdata *******/
+    File text_file(arg_text_value, "r");
+
+    /******* Language model decoding *******/
+    lm_decode(lm, text_file, map, voc, ZhuYin, Big5);
     text_file.close();
+
     return 0;
 }
 
