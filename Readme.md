@@ -14,10 +14,28 @@
 * **< Ubuntu 6.4.0-17 >**    
     * Computer Architecture: x86_64
     * CPU op-mode(s): 32-bit, 64-bit           
-* **< [SRILM 1.5.10](http://www.speech.sri.com/projects/srilm/) >**
+* **< [SRILM 1.5.10](http://www.speech.sri.com/projects/srilm/) >** -> [Installation Guide](#Setup)
 * **< g++ [gcc version 8.2.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 6.4.0 (GCC)] >** (Tested)
 * **< g++ [gcc version 4.2.1 (GCC)] >** (Tested)
+
+
+## File Description
+```
+.
+├── src/
+|   ├── Makefile -------------> g++ compiler make file
+|   ├── corpus.txt -----------> Training corpus in big5 encoding
+|   ├── Big5-ZhuYin.map ------> character to Zhu-Yin mapping in big5 encoding
+|   ├── mapping.py -----------> Creates Zhu-Yin to char mapping from its inverse mapping
+|   ├── mydisambig.cpp -------> My implementation of a viterbi-based decoding process of the language model
+|   ├── separator_big5.pl ----> Separate words into characters with white space inserted in between each character
+|   └── testdata/ ------------> testing data 1.txt ~ 5.txt are the easy ones, 6.txt ~ 10.txt are the hard ones
+├── image/
+├── srilm-1.5.10.tar.gz ------> SRILM binary source code
+├── problem_description.pdf --> Work spec
+└── Readme.md ----------------> This file
+```
 
 
 ## Usage
@@ -53,11 +71,11 @@ make clean
 ```
 - **Clean everything generated in the above steps**:
 ```
-make cleanall
+make cleanest
 ```
 
 
-## Environment Setup
+## <a name="Setup"></a>Environment Setup
 
 ### Install dependencies
 - Install **csh** if not already installed: `$ sudo apt-get install csh`
@@ -106,47 +124,3 @@ MACHINE_TYPE := i686-m64
     - Encoding problem:
         - [Sublime Text with BIG5 encoding](https://ephrain.net/sublime-text-%E8%AE%93-sublime-text-%E6%94%AF%E6%8F%B4-big5-%E7%B7%A8%E7%A2%BC%E7%9A%84%E6%96%87%E5%AD%97%E6%AA%94/)
 
-
-## TBC...working
- ===== FILES =====
-corpus.txt是此次作業的語料檔案，編碼為big5
-Big5-ZhuYin.map是文字跟注音的對照表，編碼為big5
-separator_big5.pl將文字之間安插空白
-Submit_Files 是繳交作業的資料結構
-separator_big5.pl執行方法為
-
-  ./separator_big5.pl < textfile > output
-
-(使用前先執行chmod 755 separator_big5.pl)
-
-===== TEST =====
-測資放在testdata資料夾中
-共有十個測資
-1~5是比較簡單一點的測資
-6~10是稍微難一點的測資
-
-
-## File Description
-```
-.
-├── src/
-|   ├── Makefile                g++ compiler make file
-|   ├── hmm.h                   HMM implementation
-|   ├── hmm.cpp                 HMM implementation
-|   ├── test_hmm.cpp            Testing algorithm implementation
-|   ├── train_hmm.cpp           Training algorithm implementation
-|   ├── test                    Unix executable binary code for test_hmm.cpp  (See the next "Usage" section for more details)
-|   ├── train                   Unix executable binary code for train_hmm.cpp (See the next "Usage" section for more details)
-|   ├── plot.py                 Draws the training plot
-|   ├── model_01~05.txt         Trained models
-|   └── modellist.txt           Model name list
-├── data/
-|   ├── model_init.txt          Initial model for training
-|   ├── seq_model_01~05.txt     Training data (observation sequences)
-|   ├── testing_data1.txt       Testing data (observation sequences)
-|   ├── testing_answer.txt      Real answer for "testing_data1.txt"
-|   ├── testing_result.txt      Model generated answer for "testing_data1.txt"
-|   └── testing_data2.txt       Testing data without answer
-├──problem_description.pdf      Work Spec
-└── Readme.md                   This File
-```
