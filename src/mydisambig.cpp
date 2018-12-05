@@ -78,7 +78,7 @@ void viterbi_decode(Ngram lm,
                     VocabIndex* empty_context,
                     VocabIndex* bi_context) {
     
-    
+
     /******* Initialize variable *******/
     Prob p;
     int size = 0;
@@ -203,7 +203,6 @@ void lm_decode(Ngram lm, File& text_file, VocabMap map, Vocab voc, Vocab ZhuYin,
         delete backtrack;
         delete candi_num;
     }
-    
 }
 
 
