@@ -14,9 +14,9 @@
 #include <iostream>
 using namespace std;
 /*****************************************************************************************************/
+#include "LM.h"
 #include "File.h"
 #include "Prob.h"
-#include "LM.h"
 #include "Ngram.h"
 #include "Vocab.h"
 #include "VocabMap.h"
