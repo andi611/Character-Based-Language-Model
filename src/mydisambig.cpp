@@ -33,9 +33,9 @@ using namespace std;
 *******************************************************************************************************/
 
 
-/**************************************/
-/*          Macro Definition          */
-/**************************************/
+/*******************************/
+/*          CONSTANTS          */
+/*******************************/
 #ifndef CANDIDATE
 #define CANDIDATE 1024
 #endif
@@ -49,25 +49,16 @@ using namespace std;
 #endif
 
 
-/***************************************/
-/*           Program Backoff           */
-/***************************************/
-void program_backoff(const string s, bool keyword_error) {
-    if (keyword_error) cerr << "Error >>> Invalid Argument: " << s << endl;
-    else cerr << "Error >>> Invalid number of argument: " << s << endl;
-    cerr << "Usage: ./mydisambig -text [testing file] -map [mapping file] -lm [language model] -order [order of ngram language model] > [output file path]\n" << endl;
-    exit(1);
-}
-
-
-/*****************************************/
-/*           Viterbi Recursion           */
-/*****************************************/
-void viterbi_recursion(Ngram lm, 
+/*******************************************************/
+/*                 Forward Declaration                 */
+/*******************************************************/
+void program_backoff(const string s, bool keyword_error);
+/*******************************************************/
+void viterbi_recursion(Ngram* lm, 
                        VocabMap map, 
-                       Vocab voc, 
-                       Vocab ZhuYin, 
-                       Vocab Big5, 
+                       Vocab* voc, 
+                       Vocab* ZhuYin, 
+                       Vocab* Big5, 
                        int count, 
                        VocabString* line, 
                        vector<vector<LogP>>* prob, 
@@ -76,108 +67,25 @@ void viterbi_recursion(Ngram lm,
                        vector<int>* candi_num,
                        VocabIndex v_idx,
                        VocabIndex* empty_context,
-                       VocabIndex* bi_context) {
-    
-
-    /******* Initialize variable *******/
-    Prob p;
-    int size = 0;
-    VocabMapIter iter(map, ZhuYin.getIndex(line[0]));
-    iter.init();
-
-
-    /******* Initialization for Viterbi *******/
-    while (iter.next(v_idx, p)) {
-        
-        VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
-        if (candi == Vocab_None) candi = voc.getIndex(Vocab_Unknown);  // if voc == none, mark as unknown rather than discard it
-
-        LogP logp = lm.wordProb(candi, empty_context); //unigram for start <s>
-        prob->at(0).at(size) = (logp == LogP_Zero)? SMALL: logp;
-        vidx_graph->at(0).at(size) = v_idx;
-        backtrack->at(0).at(size) = -1; // start: -1
-        size++;
-    }
-    candi_num->at(0) = size;
-
-
-    /******* Recursion for Viterbi *******/
-    for (int i = 1; i < count; i++) {
-        
-        VocabMapIter iter(map, ZhuYin.getIndex(line[i]));
-        iter.init();
-        size = 0;
-
-        while (iter.next(v_idx, p)) {
-            VocabIndex candi = voc.getIndex(Big5.getWord(v_idx));
-            if (candi == Vocab_None) candi = voc.getIndex(Vocab_Unknown);
-
-            // See last column which has the highest probability
-            LogP maxp = LogP_Zero;
-            for (int j = 0; j < candi_num->at(i-1); j++) {
-                VocabIndex last = voc.getIndex(Big5.getWord(vidx_graph->at(i-1).at(j)));
-                last = (last == Vocab_None)? voc.getIndex(Vocab_Unknown): last;
-                bi_context[0] = last;
-
-                LogP logp = lm.wordProb(candi, bi_context);
-                LogP backoff = lm.wordProb(candi, empty_context);  // Check backoff!!! VERY IMPORTANT!!! 
-                if (logp == LogP_Zero && backoff == LogP_Zero) logp == SMALL;
-
-                logp += prob->at(i-1).at(j);
-                if (logp > maxp) {
-                    maxp = logp;
-                    backtrack->at(i).at(size) = j;
-                }
-            }
-            prob->at(i).at(size) = maxp;
-            vidx_graph->at(i).at(size) = v_idx;
-            size++;
-        }
-        if (size > CANDIDATE) cout << size << endl;
-        candi_num->at(i) = size;
-    }
-}
-
-
-/**************************************/
-/*           Viterbi Decode           */
-/**************************************/
-void viterbi_decode(Vocab Big5, int count, vector<vector<LogP>>* prob, vector<vector<VocabIndex>>* vidx_graph, vector<vector<int>>* backtrack, vector<int>* candi_num) {
-    
-    LogP maxp = LogP_Zero;
-    int max_col = -1;
-    VocabString decode_path[maxWordLength];
-    decode_path[0] = "<s>";
-    decode_path[count-1] = "</s>";
-
-
-    /******* Find the max probability path *******/
-    for (int i = 0; i < candi_num->at(count-1); i++) {
-        if (prob->at(count-1).at(i) > maxp) {
-            maxp = prob->at(count-1).at(i);
-            max_col = i;
-        }
-    }
-    for (int i = count-1; i > 0; i--) {
-        decode_path[i] = Big5.getWord(vidx_graph->at(i).at(max_col));
-        max_col = backtrack->at(i).at(max_col);
-    }
-
-
-    /******* Output answer path *******/
-    for (int i = 0; i < count; i++)
-        printf("%s%s", decode_path[i], (i == count-1)? "\n": " ");
-}
+                       VocabIndex* bi_context);
+/*******************************************************/
+void viterbi_decode(Vocab* Big5, 
+                    int count, 
+                    vector<vector<LogP>>* prob, 
+                    vector<vector<VocabIndex>>* vidx_graph, 
+                    vector<vector<int>>* backtrack, 
+                    vector<int>* candi_num);
+/*******************************************************/
 
 
 /*********************************************/
 /*           Language Model Decode           */
 /*********************************************/
-void lm_decode(Ngram lm, File& text_file, VocabMap map, Vocab voc, Vocab ZhuYin, Vocab Big5) {
+void lm_decode(Ngram* lm, File* text_file, VocabMap map, Vocab* voc, Vocab* ZhuYin, Vocab* Big5) {
     
     /******* Go through the text file *******/
     char* buf;
-    while(buf = text_file.getline()) {
+    while(buf = text_file->getline()) {
 
 
         /******* Parse to VocabString a.k.a char* *******/
@@ -189,10 +97,10 @@ void lm_decode(Ngram lm, File& text_file, VocabMap map, Vocab voc, Vocab ZhuYin,
 
 
         /******* Initialize variables *******/
-        vector<vector<LogP>>*           prob = new vector<vector<LogP>>(LEN, vector<LogP>(CANDIDATE, 0.0));
-        vector<vector<VocabIndex>>*     vidx_graph = new vector<vector<VocabIndex>>(LEN, vector<VocabIndex>(CANDIDATE, 0)); // Record the (i, j) VocalIndex of Big5
-        vector<vector<int>>*            backtrack = new vector<vector<int>>(LEN, vector<int>(CANDIDATE, 0));
-        vector<int>*                    candi_num = new vector<int>(LEN, 0);
+        vector<vector<LogP>>            prob = vector<vector<LogP>>(LEN, vector<LogP>(CANDIDATE, 0.0));
+        vector<vector<VocabIndex>>      vidx_graph = vector<vector<VocabIndex>>(LEN, vector<VocabIndex>(CANDIDATE, 0)); // Record the (i, j) VocalIndex of Big5
+        vector<vector<int>>             backtrack = vector<vector<int>>(LEN, vector<int>(CANDIDATE, 0));
+        vector<int>                     candi_num = vector<int>(LEN, 0);
         VocabIndex                      v_idx; // Be mapped by ZhuYin, which is a VocabIndex of Big5
         VocabIndex                      empty_context[] = {Vocab_None};
         VocabIndex                      bi_context[] = {Vocab_None, Vocab_None};
@@ -200,19 +108,12 @@ void lm_decode(Ngram lm, File& text_file, VocabMap map, Vocab voc, Vocab ZhuYin,
 
         /******* Viterbi recursion *******/
         viterbi_recursion(lm, map, voc, ZhuYin, Big5, count, line, 
-                          prob, vidx_graph, backtrack, candi_num, 
+                          &prob, &vidx_graph, &backtrack, &candi_num, 
                           v_idx, empty_context, bi_context);
         
 
         /******* Viterbi decoding *******/
-        viterbi_decode(Big5, count, prob, vidx_graph, backtrack, candi_num);
-
-
-        /******* Clean up *******/
-        delete prob;
-        delete vidx_graph;
-        delete backtrack;
-        delete candi_num;
+        viterbi_decode(Big5, count, &prob, &vidx_graph, &backtrack, &candi_num);
     }
 }
 
@@ -247,7 +148,8 @@ int main (int argc, char* argv[]) {
 
     /******* Initialize extern parameter *******/
     Vocab voc;
-    Vocab ZhuYin, Big5;
+    Vocab ZhuYin;
+    Vocab Big5;
 
 
     /******* Read Map *******/
@@ -269,9 +171,138 @@ int main (int argc, char* argv[]) {
 
 
     /******* Language model decoding *******/
-    lm_decode(lm, text_file, map, voc, ZhuYin, Big5);
+    lm_decode(&lm, &text_file, map, &voc, &ZhuYin, &Big5);
     text_file.close();
 
     return 0;
+}
+
+
+/***************************************/
+/*           Program Backoff           */
+/***************************************/
+void program_backoff(const string s, bool keyword_error) {
+    if (keyword_error) cerr << "Error >>> Invalid Argument: " << s << endl;
+    else cerr << "Error >>> Invalid number of argument: " << s << endl;
+    cerr << "Usage: ./mydisambig -text [testing file] -map [mapping file] -lm [language model] -order [order of ngram language model] > [output file path]\n" << endl;
+    exit(1);
+}
+
+
+/*****************************************/
+/*           Viterbi Recursion           */
+/*****************************************/
+void viterbi_recursion(Ngram* lm, 
+                       VocabMap map, 
+                       Vocab* voc, 
+                       Vocab* ZhuYin, 
+                       Vocab* Big5, 
+                       int count, 
+                       VocabString* line, 
+                       vector<vector<LogP>>* prob, 
+                       vector<vector<VocabIndex>>* vidx_graph, 
+                       vector<vector<int>>* backtrack, 
+                       vector<int>* candi_num,
+                       VocabIndex v_idx,
+                       VocabIndex* empty_context,
+                       VocabIndex* bi_context) {
+    
+
+    /******* Initialize variable *******/
+    Prob p;
+    int size = 0;
+    VocabMapIter iter(map, ZhuYin->getIndex(line[0]));
+    iter.init();
+
+
+    /******* Initialization for Viterbi *******/
+    while (iter.next(v_idx, p)) {
+        
+        VocabIndex candi = voc->getIndex(Big5->getWord(v_idx));
+        if (candi == Vocab_None) candi = voc->getIndex(Vocab_Unknown);  // if voc == none, mark as unknown rather than discard it
+
+        LogP logp = lm->wordProb(candi, empty_context); //unigram for start <s>
+        prob->at(0).at(size) = (logp == LogP_Zero)? SMALL: logp;
+        vidx_graph->at(0).at(size) = v_idx;
+        backtrack->at(0).at(size) = -1; // start: -1
+        size++;
+    }
+    candi_num->at(0) = size;
+
+
+    /******* Recursion for Viterbi *******/
+    for (int i = 1; i < count; i++) {
+        
+        VocabMapIter iter(map, ZhuYin->getIndex(line[i]));
+        iter.init();
+        size = 0;
+
+        while (iter.next(v_idx, p)) {
+            VocabIndex candi = voc->getIndex(Big5->getWord(v_idx));
+            if (candi == Vocab_None) candi = voc->getIndex(Vocab_Unknown);
+
+            // See last column which has the highest probability
+            LogP maxp = LogP_Zero;
+            for (int j = 0; j < candi_num->at(i-1); j++) {
+                VocabIndex last = voc->getIndex(Big5->getWord(vidx_graph->at(i-1).at(j)));
+                last = (last == Vocab_None)? voc->getIndex(Vocab_Unknown): last;
+                bi_context[0] = last;
+
+                LogP logp = lm->wordProb(candi, bi_context);
+                LogP backoff = lm->wordProb(candi, empty_context);  // Check backoff prob
+                if (logp == LogP_Zero && backoff == LogP_Zero) logp = SMALL;
+
+                logp += prob->at(i-1).at(j);
+                if (logp > maxp) {
+                    maxp = logp;
+                    backtrack->at(i).at(size) = j;
+                }
+            }
+            prob->at(i).at(size) = maxp;
+            vidx_graph->at(i).at(size) = v_idx;
+            size++;
+        }
+
+        if (size > CANDIDATE) cout << size << endl;
+        candi_num->at(i) = size;
+    }
+}
+
+
+/**************************************/
+/*           Viterbi Decode           */
+/**************************************/
+void viterbi_decode(Vocab* Big5, 
+                    int count, 
+                    vector<vector<LogP>>* prob, 
+                    vector<vector<VocabIndex>>* vidx_graph, 
+                    vector<vector<int>>* backtrack, 
+                    vector<int>* candi_num) {
+    
+    /******* Initialize variables *******/
+    LogP maxp = LogP_Zero;
+    int max_col = -1;
+    VocabString decode_path[maxWordLength];
+    decode_path[0] = "<s>";
+    decode_path[count-1] = "</s>";
+
+
+    /******* Find the max probability path *******/
+    for (int i = 0; i < candi_num->at(count-1); i++) {
+        if (prob->at(count-1).at(i) > maxp) {
+            maxp = prob->at(count-1).at(i);
+            max_col = i;
+        }
+    }
+    for (int i = count-1; i > 0; i--) {
+        decode_path[i] = Big5->getWord(vidx_graph->at(i).at(max_col));
+        max_col = backtrack->at(i).at(max_col);
+    }
+
+
+    /******* Output answer path *******/
+    for (int i = 0; i < count - 1; i++)
+        cout << decode_path[i] << ' ';
+    cout << decode_path[count - 1] << endl;
 }
 
