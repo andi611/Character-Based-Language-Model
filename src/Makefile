@@ -13,7 +13,7 @@ MACHINE_TYPE ?= i686-m64
 LM ?= bigram.lm
 
 CXX = g++
-CXXFLAGS = -O3 -I$(SRIPATH)/include -w
+CXXFLAGS = -O3 -I$(SRIPATH)/include -w --std=c++11
 vpath lib%.a $(SRIPATH)/lib/$(MACHINE_TYPE)
 
 TARGET = mydisambig
@@ -44,16 +44,16 @@ diff:
 run:
 	[ -d $(RESULT_2_DIR) ] || mkdir -p $(RESULT_2_DIR);
 	@for i in $(shell seq 1 10) ; do \
-            echo "Running $$i.txt"; \
-            ./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
-        done;
+			echo "Running $$i.txt"; \
+			./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
+		done;
 
 run_cout:
 	[ -d $(RESULT_2_DIR) ] || mkdir -p $(RESULT_2_DIR);
 	@for i in $(shell seq 1 10) ; do \
-            echo "Running $$i.txt"; \
-            ./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2; \
-        done;
+			echo "Running $$i.txt"; \
+			./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2; \
+		done;
 		  # ./mydisambig –text testdata/seg_1.txt –map ZhuYin-Big5.map –lm bigram.lm –order 2 > result2/1.txt
 
 map:
