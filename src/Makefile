@@ -22,7 +22,7 @@ OBJ = $(SRC:.cpp=.o)
 TO = ZhuYin-Big5.map
 TO2 = ZhuYin-Utf8.map
 FROM = Big5-ZhuYin.map
-.PHONY: all clean map run
+.PHONY: all separate map build_lm run_disambig run run_cout diff clean cleanest
 
 RESULT_1_DIR=result1
 TESTDATA=testdata
@@ -36,9 +36,24 @@ $(TARGET): $(OBJ) -loolm -ldstruct -lmisc
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<
 
-diff:
-	@for i in $(shell seq 1 10); do \
-		diff $(RESULT_1_DIR)/$${i}.txt $(RESULT_2_DIR)/$${i}.txt; \
+separate:
+	perl separator_big5.pl corpus.txt > seg_corpus.txt
+	for i in $(shell seq 1 10); do \
+		perl separator_big5.pl $(TESTDATA)/$${i}.txt > $(TESTDATA)/seg_$${i}.txt; \
+	done
+
+map:
+	echo "Mapping!"
+	python3 mapping.py $(FROM) $(TO) --output_utf8 $(TO2)
+
+build_lm:
+	$(SRIPATH)/bin/$(MACHINE_TYPE)/ngram-count -text seg_corpus.txt -write lm.cnt -order 2
+	$(SRIPATH)/bin/$(MACHINE_TYPE)/ngram-count -read lm.cnt -lm bigram.lm -unk -order 2
+
+run_disambig: 
+	[ -d $(RESULT_1_DIR) ] || mkdir -p $(RESULT_1_DIR);
+	for i in $(shell seq 1 10); do \
+		$(SRIPATH)/bin/$(MACHINE_TYPE)/disambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(RESULT_1_DIR)/$${i}.txt; \
 	done;
 
 run:
@@ -56,26 +71,10 @@ run_cout:
 		done;
 		  # ./mydisambig –text testdata/seg_1.txt –map ZhuYin-Big5.map –lm bigram.lm –order 2 > result2/1.txt
 
-map:
-	echo "Mapping!"
-	python3 mapping.py $(FROM) $(TO) --output_utf8 $(TO2)
-
-
-build_lm:
-	$(SRIPATH)/bin/$(MACHINE_TYPE)/ngram-count -text seg_corpus.txt -write lm.cnt -order 2
-	$(SRIPATH)/bin/$(MACHINE_TYPE)/ngram-count -read lm.cnt -lm bigram.lm -unk -order 2
-
-run_disambig: 
-	[ -d $(RESULT_1_DIR) ] || mkdir -p $(RESULT_1_DIR);
-	for i in $(shell seq 1 10); do \
-		$(SRIPATH)/bin/$(MACHINE_TYPE)/disambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(RESULT_1_DIR)/$${i}.txt; \
+diff:
+	@for i in $(shell seq 1 10); do \
+		diff $(RESULT_1_DIR)/$${i}.txt $(RESULT_2_DIR)/$${i}.txt; \
 	done;
-
-separate:
-	perl separator_big5.pl corpus.txt > seg_corpus.txt
-	for i in $(shell seq 1 10); do \
-		perl separator_big5.pl $(TESTDATA)/$${i}.txt > $(TESTDATA)/seg_$${i}.txt; \
-	done
 
 clean:
 	$(RM) $(OBJ) $(TARGET)
