@@ -26,7 +26,7 @@ FROM = Big5-ZhuYin.map
 
 RESULT_1_DIR=result1
 TESTDATA=testdata
-TESTDATA_ORI=testdata_origin
+TESTDATA_ORI=origin_testdata
 RESULT_2_DIR=result2
 
 all: $(TARGET)
