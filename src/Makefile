@@ -38,6 +38,8 @@ $(TARGET): $(OBJ) -loolm -ldstruct -lmisc
 
 separate:
 	perl separator_big5.pl corpus.txt > seg_corpus.txt
+	mv $(TESTDATA) testdata_origin;
+	mkdir $(TESTDATA)
 	for i in $(shell seq 1 10); do \
 		perl separator_big5.pl $(TESTDATA)/$${i}.txt > $(TESTDATA)/seg_$${i}.txt; \
 	done
@@ -53,21 +55,21 @@ build_lm:
 run_disambig: 
 	[ -d $(RESULT_1_DIR) ] || mkdir -p $(RESULT_1_DIR);
 	for i in $(shell seq 1 10); do \
-		$(SRIPATH)/bin/$(MACHINE_TYPE)/disambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(RESULT_1_DIR)/$${i}.txt; \
+		$(SRIPATH)/bin/$(MACHINE_TYPE)/disambig -text $(TESTDATA)/$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(RESULT_1_DIR)/$${i}.txt; \
 	done;
 
 run:
 	[ -d $(RESULT_2_DIR) ] || mkdir -p $(RESULT_2_DIR);
 	@for i in $(shell seq 1 10) ; do \
 			echo "Running $$i.txt"; \
-			./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
+			./mydisambig -text $(TESTDATA)/$${i}.txt -map $(TO) -lm $(LM) -order 2 > result2/$${i}.txt; \
 		done;
 
 run_cout:
 	[ -d $(RESULT_2_DIR) ] || mkdir -p $(RESULT_2_DIR);
 	@for i in $(shell seq 1 10) ; do \
 			echo "Running $$i.txt"; \
-			./mydisambig -text $(TESTDATA)/seg_$${i}.txt -map $(TO) -lm $(LM) -order 2; \
+			./mydisambig -text $(TESTDATA)/$${i}.txt -map $(TO) -lm $(LM) -order 2; \
 		done;
 		  # ./mydisambig –text testdata/seg_1.txt –map ZhuYin-Big5.map –lm bigram.lm –order 2 > result2/1.txt
 
@@ -80,8 +82,6 @@ clean:
 	$(RM) $(OBJ) $(TARGET)
 
 cleanest:
-	$(RM) -r $(OBJ) $(TARGET) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
-	for i in $(shell seq 1 10); do \
-		$(RM) $(TESTDATA)/seg_$${i}.txt; \
-	done
+	$(RM) -r $(OBJ) $(TARGET) $(TESTDATA) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
+	mv testdata_origin $(TESTDATA);
 
