@@ -82,6 +82,6 @@ clean:
 	$(RM) $(OBJ) $(TARGET)
 
 cleanest:
-	$(RM) -r $(OBJ) $(TARGET) $(TESTDATA) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
+	$(RM) -r $(OBJ) $(TARGET) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
 	mv testdata_origin $(TESTDATA);
 
