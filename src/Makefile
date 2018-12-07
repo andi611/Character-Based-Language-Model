@@ -85,7 +85,7 @@ clean:
 cleanest:
 	$(RM) -r $(OBJ) $(TARGET) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
 	if [ -d "$(TESTDATA_ORI)" ]; then \
-		$(RM) -r $(TESTDATA) \
+		$(RM) -r ./$(TESTDATA) \
 		mv $(TESTDATA_ORI) $(TESTDATA);	\
 	fi
 
