@@ -55,7 +55,7 @@ build_lm:
 
 run_disambig: 
 	[ -d $(RESULT_1_DIR) ] || mkdir -p $(RESULT_1_DIR);
-	for i in $(shell seq 1 10); do \
+	@for i in $(shell seq 1 10); do \
 		$(SRIPATH)/bin/$(MACHINE_TYPE)/disambig -text $(TESTDATA)/$${i}.txt -map $(TO) -lm $(LM) -order 2 > $(RESULT_1_DIR)/$${i}.txt; \
 	done;
 
