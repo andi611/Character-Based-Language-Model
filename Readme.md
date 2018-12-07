@@ -56,8 +56,8 @@ make map
 ```
 - This generates 2 files: I) ZhuYin-Big5.map, and II) ZhuYin-Utf8.map where:
 ```
-I) ZhuYin-Big5.map: the Zhu-Yin to Chinease character mapping in big5 encoding
-II) ZhuYin-Utf8.map: the Zhu-Yin to Chinease character mapping in big5 encoding for user verification in ordinary linux environment
+I) ZhuYin-Big5.map: the Zhu-Yin to Chinese character mapping in big5 encoding
+II) ZhuYin-Utf8.map: the Zhu-Yin to Chinese character mapping in utf-8 encoding for user verification in ordinary linux environment
 ```
 - **Build language model**:
 ```
