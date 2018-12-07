@@ -41,7 +41,7 @@ separate:
 	mv $(TESTDATA) testdata_origin;
 	mkdir $(TESTDATA)
 	for i in $(shell seq 1 10); do \
-		perl separator_big5.pl $(TESTDATA)/$${i}.txt > $(TESTDATA)/seg_$${i}.txt; \
+		perl separator_big5.pl testdata_origin/$${i}.txt > $(TESTDATA)/$${i}.txt; \
 	done
 
 map:
