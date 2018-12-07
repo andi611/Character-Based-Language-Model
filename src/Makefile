@@ -26,6 +26,7 @@ FROM = Big5-ZhuYin.map
 
 RESULT_1_DIR=result1
 TESTDATA=testdata
+TESTDATA_ORI=testdata_origin
 RESULT_2_DIR=result2
 
 all: $(TARGET)
@@ -38,10 +39,10 @@ $(TARGET): $(OBJ) -loolm -ldstruct -lmisc
 
 separate:
 	perl separator_big5.pl corpus.txt > seg_corpus.txt
-	mv $(TESTDATA) testdata_origin;
+	mv $(TESTDATA) $(TESTDATA_ORI);
 	mkdir $(TESTDATA)
 	for i in $(shell seq 1 10); do \
-		perl separator_big5.pl testdata_origin/$${i}.txt > $(TESTDATA)/$${i}.txt; \
+		perl separator_big5.pl $(TESTDATA_ORI)/$${i}.txt > $(TESTDATA)/$${i}.txt; \
 	done
 
 map:
@@ -83,5 +84,8 @@ clean:
 
 cleanest:
 	$(RM) -r $(OBJ) $(TARGET) $(RESULT_2_DIR) $(RESULT_1_DIR) $(TO) $(TO2) seg_corpus.txt lm.cnt bigram.lm
-	mv testdata_origin $(TESTDATA);
+	if [ -d "$(TESTDATA_ORI)" ]; then
+		$(RM) -r $(TESTDATA)
+		mv $(TESTDATA_ORI) $(TESTDATA);	
+	fi
 
